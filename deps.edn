@@ -1,0 +1,5 @@
+{:aliases {:dev {extra-paths ["dev" "test"]},
+           :test {:extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}},
+                  :extra-paths ["test"],
+                  :main-opts ["-m" "kaocha.runner"]}},
+ :paths ["src"]}
