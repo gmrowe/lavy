@@ -5,18 +5,20 @@
 
 (defn exec-command
   [command rdr]
-  (when (= command :count-bytes)
-    (-> (.getBytes (slurp rdr))
-        seq
-        count)))
-
+  (cond
+    (= command :count-bytes)(-> (.getBytes (slurp rdr)) seq count)
+    (= command :count-lines) (->> (.getBytes (slurp rdr))
+                                  seq
+                                  (filter #(= (byte \newline) %))
+                                  count)))
 (defn parse-arg
   [arg]
-  ({"-c" :count-bytes} arg))
+  ({"-c" :count-bytes
+    "-l" :count-lines} arg))
 
 (defn run
   [command-arg file-path]
-  (with-open [rdr (io/reader file-path)]
+  (with-open [rdr (io/input-stream file-path)]
     (let [result (exec-command (parse-arg command-arg) rdr)]
       (printf "%d %s%n" result file-path))))
 
