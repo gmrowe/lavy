@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-clojure -M -m lavy.main "$@"
+bb -cp src -m lavy.main "$@"
