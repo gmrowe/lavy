@@ -10,7 +10,8 @@
                                    (count (re-seq #"\r?\n" text)))
         (= command :count-words) (let [text (slurp rdr)]
                                    (count (str/split text #"\s+")))
-        (= command :count-chars) (let [text (slurp rdr)] (count text))))
+        (= command :count-chars) (let [text (slurp rdr)]
+                                   (.count (.codePoints text)))))
 
 (defn parse-arg
   [arg]

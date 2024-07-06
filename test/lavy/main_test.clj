@@ -34,5 +34,7 @@
     (is (= 5
            (m/exec-command :count-words
                            (rdr-from-str "car star\nwar is bad")))))
-  (testing "Calling (exec-command :count-chars rdr) returns chars in rdr"
-    (is (= 12 (m/exec-command :count-chars (rdr-from-str "Hello World!"))))))
+  (testing "Counting chars of an ascii string"
+    (is (= 12 (m/exec-command :count-chars (rdr-from-str "Hello World!")))))
+  (testing "Counting chars of an UTF-8 string"
+    (is (= 12 (m/exec-command :count-chars (rdr-from-str "Ḩ℮ɭιȭ 𝖂ọ𝘳ȴ𝖉!"))))))
