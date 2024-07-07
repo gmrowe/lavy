@@ -10,16 +10,6 @@
       char-array
       io/reader))
 
-(deftest parse-arg-test
-  (testing "Arg `-c` corresponds to :count-bytes"
-    (is (= :count-bytes (m/parse-arg "-c"))))
-  (testing "Arg `-l` corresponds to :count-lines"
-    (is (= :count-lines (m/parse-arg "-l"))))
-  (testing "Arg `-w` corresponds to :count-words"
-    (is (= :count-words (m/parse-arg "-w"))))
-  (testing "Arg `-m` corresponds to :count-chars"
-    (is (= :count-chars (m/parse-arg "-m")))))
-
 (deftest parse-args-test
   (testing "Arg -c followed by single filename"
     (is (= {:options [:count-bytes], :files ["file.name"]}
@@ -74,19 +64,19 @@
                               :count-bytes 174355,
                               :count-words 29564,
                               :count-lines 3756}]))))
-  #_(testing "Results from multiple commands multiple files"
-      (is (= (str/join \newline
-                       ["    3756   29564  174355 alice.txt"
-                        "    7145   58164  342190 test.txt"
-                        "   10901   87728  516545 total"])
-             (m/format-output [{:file-path "alice.txt",
-                                :count-bytes 174355,
-                                :count-words 29564,
-                                :count-lines 3756}
-                               {:file-path "test.txt",
-                                :count-bytes 342190,
-                                :count-words 58164,
-                                :count-lines 7145}])))))
+  (testing "Results from multiple commands multiple files"
+    (is (= (str/join \newline
+                     ["    3756   29564  174355 alice.txt"
+                      "    7145   58164  342190 test.txt"
+                      "   10901   87728  516545 total"])
+           (m/format-output [{:file-path "alice.txt",
+                              :count-bytes 174355,
+                              :count-words 29564,
+                              :count-lines 3756}
+                             {:file-path "test.txt",
+                              :count-bytes 342190,
+                              :count-words 58164,
+                              :count-lines 7145}])))))
 
 
 (comment

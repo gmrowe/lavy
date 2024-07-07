@@ -2,26 +2,6 @@
   (:require [clojure.java.io :as io]
             [clojure.string :as str]))
 
-(defn exec-command
-  [command rdr]
-  (let [text (slurp rdr)]
-    (case command
-      :count-bytes (count (seq (.getBytes text)))
-      :count-lines (count (re-seq #"\r?\n" text))
-      :count-words (count (str/split text #"\s+"))
-      :count-chars (.count (.codePoints text)))))
-
-(defn format-output
-  [outputs]
-  (let [output (first outputs)
-        fmt (fn [opt] (if opt (format "%8d" opt) ""))]
-    (format "%s%s%s%s %s"
-            (fmt (:count-lines output))
-            (fmt (:count-words output))
-            (fmt (:count-chars output))
-            (fmt (:count-bytes output))
-            (:file-path output))))
-
 (def opt-map
   {\c :count-bytes, \l :count-lines, \m :count-chars, \w :count-words})
 
@@ -32,30 +12,46 @@
   (let [[opts filenames] (partition-by #(str/starts-with? % "-") args)]
     {:options (mapcat parse-opt-sequence opts), :files filenames}))
 
-(defn exec-all
-  [{:keys [options files]}]
-  (for [opt options
-        file files]
-    {opt (exec-command opt (io/reader file)), :file-path file}))
+(defn exec-command
+  [command rdr]
+  (let [text (slurp rdr)]
+    (case command
+      :count-bytes (count (seq (.getBytes text)))
+      :count-lines (count (re-seq #"\r?\n" text))
+      :count-words (count (str/split text #"\s+"))
+      :count-chars (.count (.codePoints text)))))
 
 (defn exec-commands
   [opt-map]
-  (map #(apply merge %)
-    (->> (exec-all opt-map)
-         (group-by :filename)
-         vals)))
+  (let [results (for [opt (:options opt-map)
+                      file (:files opt-map)]
+                  {opt (exec-command opt (io/reader file)), :file-path file})]
+    (->> results
+         (group-by :file-path)
+         vals
+         (map #(apply merge %)))))
 
-(defn parse-arg
-  [arg]
-  ({"-c" :count-bytes, "-l" :count-lines, "-w" :count-words, "-m" :count-chars}
-   arg))
+(defn format-output
+  [results]
+  (let [fmt (fn [opt] (if opt (format "%8d" opt) ""))]
+    (str/join \newline
+              (map (fn [output]
+                     (format "%s%s%s%s %s"
+                             (fmt (:count-lines output))
+                             (fmt (:count-words output))
+                             (fmt (:count-chars output))
+                             (fmt (:count-bytes output))
+                             (:file-path output)))
+                results))))
 
 (defn run
   [args]
-  (let [[command-arg file-path] args]
-    (with-open [rdr (io/reader file-path)]
-      (let [result (exec-command (parse-arg command-arg) rdr)]
-        (printf "%d %s%n" result file-path)))))
+  (->> args
+       parse-args
+       exec-commands
+       (map format-output)
+       (str/join \newline)
+       println))
 
 (def usage
   (str/join \newline
