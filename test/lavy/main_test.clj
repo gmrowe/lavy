@@ -32,7 +32,11 @@
   (testing "Opts with multiple filenames"
     (is (= {:options [:count-lines :count-words],
             :files ["file-1.txt" "file-2.txt"]}
-           (m/parse-args ["-lw" "file-1.txt" "file-2.txt"])))))
+           (m/parse-args ["-lw" "file-1.txt" "file-2.txt"]))))
+  (testing "If no opts provided, default is -clw"
+    (is (= {:options [:count-bytes :count-lines :count-words],
+            :files ["file-1.txt"]}
+           (m/parse-args ["file-1.txt"])))))
 
 (deftest main-test
   (testing "Calling -main with no args results in usage string"
