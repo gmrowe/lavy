@@ -72,5 +72,5 @@
              "    -w: Count the number of words in the supplied file"
              "    -m: Count the number of characters in the supplied file" ""]))
 
-(defn -main [& args] (if (< (count args) 2) (print usage) (run args)))
+(defn -main [& args] (if (< (count args) 1) (print usage) (run args)))
 
