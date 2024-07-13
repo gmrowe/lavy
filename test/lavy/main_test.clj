@@ -36,27 +36,25 @@
   (testing "If no opts provided, default is -clw"
     (is (= {:options [:count-bytes :count-lines :count-words],
             :files ["file-1.txt"]}
-           (m/parse-args ["file-1.txt"])))))
-
-(deftest main-test
-  (testing "Calling -main with no args results in usage string"
-    (is (= m/usage (with-out-str (m/-main)))))
-  (testing "Calling -main with 1 arg results in usage string"
-    (is (= m/usage (with-out-str (m/-main ["-c"]))))))
+           (m/parse-args ["file-1.txt"]))))
+  (testing "If no file is provided, default is stdin"
+    (is (= {:options [:count-lines :count-words], :files ["*in*"]}
+           (m/parse-args ["-lw"]))))
+  (testing "If no args are provided the all defaults should be used"
+    (is (= {:options [:count-bytes :count-lines :count-words], :files ["*in*"]}
+           (m/parse-args nil)))))
 
 (deftest exec-command-test
   (testing "Calling (exec-command :count-bytes rdr) returns bytes in rdr"
-    (is (= 31 (m/exec-command :count-bytes (rdr-from-str "Ḩ℮ɭιȭ 𝖂ọ𝘳ȴ𝖉!")))))
+    (is (= 31 (m/exec-command :count-bytes "Ḩ℮ɭιȭ 𝖂ọ𝘳ȴ𝖉!"))))
   (testing "Calling (exec-command :count-lines rdr) returns num lines in rdr"
-    (is (= 2 (m/exec-command :count-lines (rdr-from-str "abc\ndef\ng h i")))))
+    (is (= 2 (m/exec-command :count-lines "abc\ndef\ng h i"))))
   (testing "Calling (exec-command :count-words rdr) retruns words in rdr"
-    (is (= 5
-           (m/exec-command :count-words
-                           (rdr-from-str "car star\nwar is bad")))))
+    (is (= 5 (m/exec-command :count-words "car star\nwar is bad"))))
   (testing "Counting chars of an ascii string"
-    (is (= 12 (m/exec-command :count-chars (rdr-from-str "Hello World!")))))
+    (is (= 12 (m/exec-command :count-chars "Hello World!"))))
   (testing "Counting chars of an UTF-8 string"
-    (is (= 12 (m/exec-command :count-chars (rdr-from-str "Ḩ℮ɭιȭ 𝖂ọ𝘳ȴ𝖉!"))))))
+    (is (= 12 (m/exec-command :count-chars "Ḩ℮ɭιȭ 𝖂ọ𝘳ȴ𝖉!")))))
 
 (deftest output-results-test
   (testing "Results from single commnd single filename"
@@ -81,6 +79,13 @@
                               :count-bytes 342190,
                               :count-words 58164,
                               :count-lines 7145}])))))
+
+(deftest run-test
+  (testing "Read from stdin when file = *in*"
+    (is (= "       0       2      12 "
+           (with-in-str "Hello World!" (m/run nil)))))
+  (testing "Calling run with -h prints usage string"
+    (is (= m/usage (m/run ["-h"])))))
 
 
 (comment
